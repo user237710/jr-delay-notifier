@@ -7,14 +7,21 @@ on:
 
 jobs:
   run-script:
-    runs-on: ubuntu-latest   # 実行環境（Linux）
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4   # リポジトリのコードを取得
+      - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"    # Pythonのバージョン
+          python-version: "3.11"
+
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      # ←ここに書く！
+      - name: Set GOOGLE_CREDENTIALS
+        run: echo "${{ secrets.GOOGLE_CREDENTIALS }}" > credentials.json
+
       - name: Run script
         run: python main.py
