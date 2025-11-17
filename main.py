@@ -1,18 +1,35 @@
 import requests
+from bs4 import BeautifulSoup
 
-def main():
-    message = "テスト通知：JR九州遅延チェック"
-    line_token = "ZhPSkhFOjbQ18QLNyZeCH+mcdOJW8CYt7yxMBBiGTbCbnq7xOexwKK410s16lQ0vS+SdVyDYWsSRT95G9u2jENRIw3VLvY6X7NKsVGkx225cMIoVZeeKSDkV9fPwrOms/2ccs/bhlvY7YZaDAOcJsAdB04t89/1O/w1cDnyilFU="
-    line_user_id = "U799f63217d61fbbdb2aa7591772bb767"
+url = "https://www.jrkyushu.co.jp/train_status/"
+res = requests.get(url)
+soup = BeautifulSoup(res.text, "html.parser")
+
+# 路線ごとのブロックを取得
+lines = soup.find_all("div", class_="train_info")
+
+for line in lines:
+    name = line.find("h3").get_text(strip=True)
+    status = line.find("p").get_text(strip=True)
+
+    if "鹿児島本線" in name:
+        print(name, status)
+
+
+def notify_line(message):
+    line_token = "YOUR_LINE_ACCESS_TOKEN"
+    line_user_id = "YOUR_USER_ID"
 
     requests.post(
         "https://api.line.me/v2/bot/message/push",
-        headers={"Authorization": f"Bearer {line_token}"},
+        headers={"Authorization": f"Bearer " + line_token},
         json={
             "to": line_user_id,
             "messages": [{"type": "text", "text": message}]
         }
     )
 
-if __name__ == "__main__":
-    main()
+# 遅延があれば通知
+if "遅延" in status:
+    notify_line(f"{name}で遅延が発生しています: {status}")
+
